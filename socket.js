@@ -13,10 +13,30 @@ var io = require('socket.io')(server);
 // Object containing subscribers to events
 let subscriptions = {};
 
+// Object containing routines to call
+let routines = {};
+
 // Set up the socket
 server.listen(SOCKET_PORT, function () {
   console.log('[SOCKET] Listening at port ' + SOCKET_PORT);
 });
+
+// Call a routine
+function call(routineName) {
+  if (routines[routineName]) {
+    routines[routineName]();
+  }
+};
+
+// Add a new routine
+function addRoutine(routineName, fn) {
+  routines[routineName] = fn;
+};
+
+// Remove a routine
+function removeRoutine(routineName) {
+  delete routines[routineName];
+};
 
 // Create a subscription
 function subscribe(eventName, socket) {
@@ -79,6 +99,11 @@ function publish(eventName, message) {
 io.on('connection', function(socket) {
   console.log('[SOCKET] New connection from ' + socket.client.conn.remoteAddress);
 
+  socket.on('call', function(data) {
+    console.log('[SOCKET] Received call command for \'' + data.routineName + '\'');
+    call(data.routineName);
+  });
+
   socket.on('subscribe', function(data) {
     console.log('[SOCKET] Adding subscription to \'' + data.eventName + '\'');
     subscribe(data.eventName, socket);
@@ -97,4 +122,6 @@ io.on('connection', function(socket) {
 module.exports.SOCKET_PORT = SOCKET_PORT;
 module.exports.EVENT_NAME_WILDCARD = EVENT_NAME_WILDCARD;
 
+module.exports.routines.add = addRoutine;
+module.exports.routines.remove = removeRoutine;
 module.exports.publish = publish;
