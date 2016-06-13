@@ -2,7 +2,7 @@
   "name": "node-socket-ipc",
   "version": "0.0.1",
   "description": "Simple inter-process communication using Socket.io",
-  "main": "app.js",
+  "main": "socket.js",
   "scripts": {
     "start": "node socket.js",
     "test": "echo \"Error: no test specified\" && exit 1"
