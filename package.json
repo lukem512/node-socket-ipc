@@ -1,0 +1,30 @@
+{
+  "name": "node-socket-ipc",
+  "version": "0.0.1",
+  "description": "Simple inter-process communication using Socket.io",
+  "main": "app.js",
+  "scripts": {
+    "start": "node socket.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lukem512/node-socket-ipc.git"
+  },
+  "keywords": [
+    "socket",
+    "inter-process communication",
+    "ipc",
+    "websocket",
+    "socket.io"
+  ],
+  "author": "Luke Mitchell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lukem512/node-socket-ipc/issues"
+  },
+  "homepage": "https://github.com/lukem512/node-socket-ipc",
+  "dependencies": {
+    "socket.io": "^1.4.6"
+  }
+}
