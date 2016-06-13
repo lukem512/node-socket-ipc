@@ -122,6 +122,8 @@ io.on('connection', function(socket) {
 module.exports.SOCKET_PORT = SOCKET_PORT;
 module.exports.EVENT_NAME_WILDCARD = EVENT_NAME_WILDCARD;
 
+module.exports.routines = {};
 module.exports.routines.add = addRoutine;
 module.exports.routines.remove = removeRoutine;
+
 module.exports.publish = publish;
