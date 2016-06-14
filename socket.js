@@ -21,20 +21,24 @@ server.listen(SOCKET_PORT, function () {
   console.log('[SOCKET] Listening at port ' + SOCKET_PORT);
 });
 
-// Call a routine
-function call(routineName) {
+// Call a routine, returning the promise
+function call(routineName, args) {
+  console.log('Looking for routine with name \'' + routineName + '\'');
   if (routines[routineName]) {
-    routines[routineName]();
+    console.log('[SOCKET] Calling routine with name \'' + routineName + '\'');
+    return routines[routineName](args);
   }
 };
 
 // Add a new routine
 function addRoutine(routineName, fn) {
+  console.log('[SOCKET] Adding routine to ' + routineName);
   routines[routineName] = fn;
 };
 
 // Remove a routine
 function removeRoutine(routineName) {
+  console.log('[SOCKET] Removing routine from ' + routineName);
   delete routines[routineName];
 };
 
@@ -62,7 +66,7 @@ function subscribe(eventName, socket) {
 };
 
 // Delete a subscription
-function unsubcribe(eventName, socket) {
+function unsubscribe(eventName, socket) {
   if (eventName == EVENT_NAME_WILDCARD) {
     Object.keys(subscriptions).forEach(key => {
       unsubscribe(key, socket);
@@ -96,26 +100,54 @@ function publish(eventName, message) {
 }
 
 // Events fired for each new connection
-io.on('connection', function(socket) {
+io.on('connection', socket => {
   console.log('[SOCKET] New connection from ' + socket.client.conn.remoteAddress);
 
-  socket.on('call', function(data) {
-    console.log('[SOCKET] Received call command for \'' + data.routineName + '\'');
-    call(data.routineName);
+  socket.on('call', (data, fn) => {
+    let args = data.args || {};
+    let routineName = data.routineName;
+
+    if (!routineName) {
+      console.error('[SOCKET] routineName not provided');
+      return fn({ message: 'routineName not provided' }, false);
+    }
+
+    console.log('[SOCKET] Received call command for \'' + routineName + '\'');
+
+    call(routineName, args)
+      .then(result => {
+        console.log('[SOCKET] Call command was resolved with value', result);
+        return fn(null, result);
+      })
+      .catch(err => {
+        console.error('[SOCKET] Call command was rejected with error', err);
+        return fn(err, false)
+      });
   });
 
-  socket.on('subscribe', function(data) {
-    console.log('[SOCKET] Adding subscription to \'' + data.eventName + '\'');
-    subscribe(data.eventName, socket);
+  socket.on('subscribe', data => {
+    let eventName = data.eventName;
+    if (!eventName) {
+      return console.error('[SOCKET] eventName not provided');
+    }
+
+    console.log('[SOCKET] Adding subscription to \'' + eventName + '\'');
+    subscribe(eventName, socket);
   });
 
-  socket.on('unsubcribe', function(data) {
-    console.log('[SOCKET] Removing subscription from \'' + data.eventName + '\'');
-    unsubcribe(data.eventName, socket);
+  socket.on('unsubcribe', data => {
+    let eventName = data.eventName;
+    if (!eventName) {
+      return console.error('[SOCKET] eventName not provided');
+    }
+
+    console.log('[SOCKET] Removing subscription from \'' + eventName + '\'');
+    unsubscribe(eventName, socket);
   });
 
   socket.on('disconnect', function() {
-    console.log('[SOCKET] Client disconnected');
+    console.log('[SOCKET] Client disconnected', socket);
+    unsubscribe(EVENT_NAME_WILDCARD, socket);
   });
 });
 
