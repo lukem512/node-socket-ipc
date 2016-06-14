@@ -146,7 +146,7 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', function() {
-    console.log('[SOCKET] Client disconnected', socket);
+    console.log('[SOCKET] Client disconnected');
     unsubscribe(EVENT_NAME_WILDCARD, socket);
   });
 });
