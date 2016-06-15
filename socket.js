@@ -4,6 +4,8 @@
 // Luke Mitchell, 13/06/2016
 let SOCKET_PORT = process.env.SOCKET_PORT || 3000;
 
+let LOG_PREFIX = process.env.LOG_PREFIX || '';
+
 let EVENT_NAME_WILDCARD = '*';
 
 var app = require('express')();
@@ -18,26 +20,26 @@ let routines = {};
 
 // Set up the socket
 server.listen(SOCKET_PORT, function () {
-  console.log('[SOCKET] Listening at port ' + SOCKET_PORT);
+  console.log(LOG_PREFIX + '[SOCKET] Listening at port ' + SOCKET_PORT);
 });
 
 // Call a routine, returning the promise
 function call(routineName, args) {
   if (routines[routineName]) {
-    console.log('[SOCKET] Calling routine with name \'' + routineName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Calling routine with name \'' + routineName + '\'');
     return routines[routineName](args);
   }
 };
 
 // Add a new routine
 function addRoutine(routineName, fn) {
-  console.log('[SOCKET] Adding routine to ' + routineName);
+  console.log(LOG_PREFIX + '[SOCKET] Adding routine to ' + routineName);
   routines[routineName] = fn;
 };
 
 // Remove a routine
 function removeRoutine(routineName) {
-  console.log('[SOCKET] Removing routine from ' + routineName);
+  console.log(LOG_PREFIX + '[SOCKET] Removing routine from ' + routineName);
   delete routines[routineName];
 };
 
@@ -92,7 +94,7 @@ function publish(eventName, message) {
 
   let data = JSON.stringify(message);
 
-  console.log('[SOCKET] Publishing to \'' + eventName + '\'. There are ' + subscriptions[eventName].length + ' subscriptions.');
+  console.log(LOG_PREFIX + '[SOCKET] Publishing to \'' + eventName + '\'. There are ' + subscriptions[eventName].length + ' subscriptions.');
   subscriptions[eventName].forEach(conn => {
     conn.emit(eventName, data);
   });
@@ -100,7 +102,7 @@ function publish(eventName, message) {
 
 // Events fired for each new connection
 io.on('connection', socket => {
-  console.log('[SOCKET] New connection from ' + socket.client.conn.remoteAddress);
+  console.log(LOG_PREFIX + '[SOCKET] New connection from ' + socket.client.conn.remoteAddress);
 
   socket.on('call', (data, fn) => {
     let args = data.args || {};
@@ -111,11 +113,11 @@ io.on('connection', socket => {
       return fn({ message: 'routineName not provided' }, false);
     }
 
-    console.log('[SOCKET] Received call command for \'' + routineName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Received call command for \'' + routineName + '\'');
 
     call(routineName, args)
       .then(result => {
-        console.log('[SOCKET] Call command was resolved with value', result);
+        console.log(LOG_PREFIX + '[SOCKET] Call command was resolved with value', result);
         return fn(null, result);
       })
       .catch(err => {
@@ -130,7 +132,7 @@ io.on('connection', socket => {
       return console.error('[SOCKET] eventName not provided');
     }
 
-    console.log('[SOCKET] Adding subscription to \'' + eventName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Adding subscription to \'' + eventName + '\'');
     subscribe(eventName, socket);
   });
 
@@ -140,12 +142,12 @@ io.on('connection', socket => {
       return console.error('[SOCKET] eventName not provided');
     }
 
-    console.log('[SOCKET] Removing subscription from \'' + eventName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Removing subscription from \'' + eventName + '\'');
     unsubscribe(eventName, socket);
   });
 
   socket.on('disconnect', function() {
-    console.log('[SOCKET] Client disconnected');
+    console.log(LOG_PREFIX + '[SOCKET] Client disconnected');
     unsubscribe(EVENT_NAME_WILDCARD, socket);
   });
 });
