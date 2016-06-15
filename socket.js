@@ -23,7 +23,6 @@ server.listen(SOCKET_PORT, function () {
 
 // Call a routine, returning the promise
 function call(routineName, args) {
-  console.log('Looking for routine with name \'' + routineName + '\'');
   if (routines[routineName]) {
     console.log('[SOCKET] Calling routine with name \'' + routineName + '\'');
     return routines[routineName](args);
