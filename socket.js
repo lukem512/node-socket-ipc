@@ -26,20 +26,20 @@ server.listen(SOCKET_PORT, function () {
 // Call a routine, returning the promise
 function call(routineName, args) {
   if (routines[routineName]) {
-    console.log(LOG_PREFIX + '[SOCKET] Calling routine with name \'' + routineName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Calling routine with name:', routineName);
     return routines[routineName](args);
   }
 };
 
 // Add a new routine
 function addRoutine(routineName, fn) {
-  console.log(LOG_PREFIX + '[SOCKET] Adding routine to ' + routineName);
+  console.log(LOG_PREFIX + '[SOCKET] Adding routine to:', routineName);
   routines[routineName] = fn;
 };
 
 // Remove a routine
 function removeRoutine(routineName) {
-  console.log(LOG_PREFIX + '[SOCKET] Removing routine from ' + routineName);
+  console.log(LOG_PREFIX + '[SOCKET] Removing routine from:', routineName);
   delete routines[routineName];
 };
 
@@ -113,15 +113,15 @@ io.on('connection', socket => {
       return fn({ message: 'routineName not provided' }, false);
     }
 
-    console.log(LOG_PREFIX + '[SOCKET] Received call command for \'' + routineName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Received call command for:', routineName);
 
     call(routineName, args)
       .then(result => {
-        console.log(LOG_PREFIX + '[SOCKET] Call command was resolved with value', result);
+        console.log(LOG_PREFIX + '[SOCKET] Call command was resolved with value:', result);
         return fn(null, result);
       })
       .catch(err => {
-        console.error(LOG_PREFIX + '[SOCKET] Call command was rejected with error', err);
+        console.error(LOG_PREFIX + '[SOCKET] Call command was rejected with error:', err);
         return fn(err, false)
       });
   });
@@ -132,7 +132,7 @@ io.on('connection', socket => {
       return console.error(LOG_PREFIX + '[SOCKET] eventName not provided');
     }
 
-    console.log(LOG_PREFIX + '[SOCKET] Adding subscription to \'' + eventName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Adding subscription to:', eventName);
     subscribe(eventName, socket);
   });
 
@@ -142,7 +142,7 @@ io.on('connection', socket => {
       return console.error(LOG_PREFIX + '[SOCKET] eventName not provided');
     }
 
-    console.log(LOG_PREFIX + '[SOCKET] Removing subscription from \'' + eventName + '\'');
+    console.log(LOG_PREFIX + '[SOCKET] Removing subscription from:', eventName);
     unsubscribe(eventName, socket);
   });
 
